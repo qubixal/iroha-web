@@ -1,0 +1,284 @@
+---
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<meta
+			name="description"
+			content="iroha | iroh-style P2P mesh networking in Tailscale"
+		/>
+		<title>iroha | iroh-style P2P mesh networking in Tailscale</title>
+		<link
+			rel="preload"
+			href="/fonts/Italiana-Regular.ttf"
+			as="font"
+			type="font/ttf"
+			crossorigin
+		/>
+		<link
+			rel="preload"
+			href="/fonts/MPlusRounded1c-Bold.woff2"
+			as="font"
+			type="font/woff2"
+			crossorigin
+		/>
+		<link
+			rel="preload"
+			href="/fonts/NovaMono-Regular.ttf"
+			as="font"
+			type="font/ttf"
+			crossorigin
+		/>
+		<style>
+			@layer reset, tokens, base, components;
+
+			@layer reset {
+				*, *::before, *::after { box-sizing: border-box; }
+				* { margin: 0; }
+			}
+
+			@layer tokens {
+				:root {
+					--color-bg: #160e2c;
+					--color-text: #f1eaf4;
+					--color-muted: #b9aec9;
+					--color-primary: #d4589d;
+					--color-secondary: #2b856c;
+					--color-iroh: #6257F7;
+					--color-gradient-a: #feeae4;
+					--color-gradient-b: #c3d4ed;
+					--font-sans: "Italiana", "Didot", "Bodoni MT", Georgia, serif;
+					--font-display: "M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", "Hiragino Sans", system-ui, sans-serif;
+					--font-mono: "NovaMono", ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+				}
+
+				@font-face {
+					font-family: "Italiana";
+					src: url("/fonts/Italiana-Regular.ttf") format("truetype");
+					font-weight: 400;
+					font-style: normal;
+					font-display: swap;
+				}
+
+				@font-face {
+					font-family: "M PLUS Rounded 1c";
+					src: url("/fonts/MPlusRounded1c-Bold.woff2") format("woff2");
+					font-weight: 700;
+					font-style: normal;
+					font-display: swap;
+				}
+
+				@font-face {
+					font-family: "NovaMono";
+					src: url("/fonts/NovaMono-Regular.ttf") format("truetype");
+					font-weight: 400;
+					font-style: normal;
+					font-display: swap;
+				}
+			}
+
+			@layer base {
+				html, body { height: 100%; }
+
+				body {
+					background: var(--color-bg);
+					color: var(--color-text);
+					font-family: var(--font-sans);
+					overflow-x: hidden;
+				}
+
+				::selection {
+					background: var(--color-primary);
+					color: var(--color-bg);
+				}
+			}
+
+			@layer components {
+				.stage {
+					position: relative;
+					height: 100svh;
+					min-height: 560px;
+					overflow: hidden;
+					background: var(--color-bg);
+				}
+
+				.stage canvas {
+					position: absolute;
+					inset: 0;
+					width: 100%;
+					height: 100%;
+					display: block;
+				}
+
+				.hero {
+					position: absolute;
+					z-index: 3;
+					top: 50%;
+					left: clamp(1.5rem, 6vw, 6rem);
+					transform: translateY(-50%);
+					max-width: min(42ch, 46vw);
+					pointer-events: none;
+				}
+
+				.stage canvas {
+					z-index: 1;
+				}
+
+				.hero .kicker {
+					font-family: var(--font-mono);
+					font-size: clamp(1.25rem, 2vw + 0.85rem, 1.9rem);
+					letter-spacing: 0.1em;
+					line-height: 1.5;
+					color: var(--color-text);
+					margin: 0 0 0.6rem;
+					text-wrap: balance;
+					text-shadow:
+						0 1px 12px rgba(22, 14, 44, 0.95),
+						0 0 2px rgba(22, 14, 44, 0.9);
+					
+					animation: rise 1.5s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
+				}
+
+				.hero .kicker .k-mob { display: none; }
+
+				.hero h1 {
+					font-family: var(--font-display);
+					font-size: clamp(3rem, 7vw, 7rem);
+					line-height: 1;
+					letter-spacing: 0.14em;
+					font-weight: 700;
+					-webkit-background-clip: text;
+					background-clip: text;
+					color: var(--color-primary);
+
+					animation: rise 1.5s cubic-bezier(0.22, 1, 0.36, 1) 0.35s both;
+				}
+
+				.hero p {
+					margin-top: 0.7rem;
+					font-family: var(--font-display);
+					font-weight: 700;
+					font-size: clamp(1rem, 1.3vw + 0.7rem, 1.35rem);
+					letter-spacing: 0.08em;
+					line-height: 1.8;
+					color: var(--color-muted);
+					text-shadow:
+						0 1px 12px rgba(22, 14, 44, 0.95),
+						0 0 2px rgba(22, 14, 44, 0.9);
+
+					animation: rise 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.4s both;
+				}
+
+				.hero p b {
+					color: var(--color-iroh);
+					font-weight: 700;
+				}
+
+				.scroll-cue {
+					margin-top: 2.4rem;
+					display: flex;
+					align-items: center;
+					gap: 0.7rem;
+					color: var(--color-muted);
+					font-family: var(--font-mono);
+					font-size: 0.72rem;
+					letter-spacing: 0.34em;
+					text-transform: uppercase;
+					text-indent: 0.34em;
+					animation: rise 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.7s both;
+				}
+
+				.scroll-cue svg {
+					width: 2rem;
+					height: 2rem;
+					animation: cue-nudge 2.2s ease-in-out 2s infinite;
+				}
+
+				@keyframes cue-nudge {
+					0%, 100% { transform: translateY(0); opacity: 0.55; }
+					50% { transform: translateY(7px); opacity: 1; }
+				}
+
+				@media (prefers-reduced-motion: reduce) {
+					.scroll-cue,
+					.scroll-cue svg {
+						animation: none;
+					}
+				}
+
+				@keyframes rise {
+					from { opacity: 0; transform: translateY(26px); }
+					to { opacity: 1; transform: translateY(0); }
+				}
+
+				@media (max-width: 760px) {
+					.hero {
+						top: 6%;
+						left: 1.5rem;
+						right: 1.5rem;
+						transform: none;
+						max-width: none;
+					}
+
+					/* hero wrap for mobile */
+					.hero .kicker {
+						font-size: clamp(1.05rem, 5vw, 1.35rem);
+						line-height: 1.55;
+						text-wrap: balance;
+						animation-delay: 0.4s;
+					}
+
+					.hero .kicker .k-desk { display: none; }
+					.hero .kicker .k-mob { display: inline; }
+
+					.hero h1 { font-size: clamp(2.75rem, 17vw, 4.5rem); }
+
+					.hero p {
+						font-size: clamp(0.85rem, 3.6vw, 1rem);
+					}
+				}
+
+				/* mid width (between mobile and full desktop) hero wraps + goes upwards */
+				@media (min-width: 761px) and (max-width: 1200px) {
+					.hero {
+						top: 42%;
+						max-width: 32ch;
+					}
+
+					.hero h1 { font-size: clamp(3rem, 7.5vw, 5.5rem); }
+
+					.hero p br { display: none; }
+				}
+
+				/* wide: cap hero text size */
+				@media (min-width: 1301px) {
+					.hero h1 { font-size: clamp(3rem, 6vw, 6rem); }
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<main class="stage" id="stage">
+			<canvas id="globe" aria-hidden="true"></canvas>
+			<header class="hero" id="hero">
+				<p class="kicker"><span class="k-desk">Autorouting global networks with</span><span class="k-mob">Autorouting<br />global networks with</span></p>
+				<h1>Iroha</h1>
+				<p class="sub"><b>iroh</b>-style P2P mesh networking <br />in Tailscale</p>
+				<div class="scroll-cue" aria-hidden="true">
+					<svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+						<path d="M6 9.5 10.5 14 15 9.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+						<path d="M6 14.5 10.5 19 15 14.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.45" />
+					</svg>
+				</div>
+			</header>
+		</main>
+
+		<script>
+			import "../scripts/globe.ts";
+		</script>
+	</body>
+</html>
