@@ -244,7 +244,7 @@ function setYou(hub: Hub, via: string) {
 async function placeYou() {
 	// 1) pray that CDN response headers work
 	try {
-		const res = await fetch(`/data/land-110m.json?edge-probe=${Date.now()}`, { method: "HEAD", cache: "no-store" });
+		const res = await fetch(`${dataUrl("data/land-110m.json")}?edge-probe=${Date.now()}`, { method: "HEAD", cache: "no-store" });
 		const ray = res.headers.get("cf-ray") ?? "";
 		const pop = ray.split("-").pop()?.toUpperCase() ?? "";
 		const srv = (res.headers.get("server") ?? "").toUpperCase();
@@ -284,7 +284,7 @@ let landReady = false;
 
 async function loadLand() {
 	try {
-		const res = await fetch("/data/land-110m.json");
+		const res = await fetch(dataUrl("data/land-110m.json"));
 		const topo = await res.json();
 		const t = topo.transform;
 		const sx = t.scale[0], sy = t.scale[1];
@@ -783,55 +783,66 @@ function frame() {
 	requestAnimationFrame(frame);
 }
 
-new IntersectionObserver((entries) => {
-	const vis = entries[0].isIntersecting;
-	if (reduceMotion.matches) return;
-	if (vis && !running) {
-		running = true;
-		last = performance.now() / 1000;
-		requestAnimationFrame(frame);
-	} else if (!vis) {
-		running = false;
-	}
-}).observe(stage);
-
-document.addEventListener("visibilitychange", () => {
-	if (reduceMotion.matches) return;
-	if (!document.hidden && !running) {
-		running = true;
-		last = performance.now() / 1000;
-		requestAnimationFrame(frame);
-	} else if (document.hidden) {
-		running = false;
-	}
-});
-
-// redraw after resizing
-new ResizeObserver(() => {
-	layout();
-	draw(reduceMotion.matches ? 30 : performance.now() / 1000 - t0);
-}).observe(stage);
-
-function drawStatic() {
-	draw(30);
+// dataBase = site base path ("/" locally, "/iroha-web" on Pages),
+// passed from index.astro via define:vars so fetches resolve there too.
+let dataBase = "/";
+function dataUrl(p: string): string {
+	return `${dataBase}${p}`.replace(/([^:])\/+/g, "$1/");
 }
 
-// place everything
-layout();
-loadLand();
-placeYou();
+export function startGlobe(base: string): void {
+	dataBase = base.endsWith("/") ? base : `${base}/`;
 
-// redraw after fonts are ready
-if (document.fonts?.ready) {
-	document.fonts.ready.then(() => {
+	new IntersectionObserver((entries) => {
+		const vis = entries[0].isIntersecting;
+		if (reduceMotion.matches) return;
+		if (vis && !running) {
+			running = true;
+			last = performance.now() / 1000;
+			requestAnimationFrame(frame);
+		} else if (!vis) {
+			running = false;
+		}
+	}).observe(stage);
+
+	document.addEventListener("visibilitychange", () => {
+		if (reduceMotion.matches) return;
+		if (!document.hidden && !running) {
+			running = true;
+			last = performance.now() / 1000;
+			requestAnimationFrame(frame);
+		} else if (document.hidden) {
+			running = false;
+		}
+	});
+
+	// redraw after resizing
+	new ResizeObserver(() => {
 		layout();
 		draw(reduceMotion.matches ? 30 : performance.now() / 1000 - t0);
-	});
-}
-if (reduceMotion.matches) {
-	drawStatic();
-} else {
-	draw(0);
-	frame();
+	}).observe(stage);
+
+	function drawStatic() {
+		draw(30);
+	}
+
+	// place everything
+	layout();
+	loadLand();
+	placeYou();
+
+	// redraw after fonts are ready
+	if (document.fonts?.ready) {
+		document.fonts.ready.then(() => {
+			layout();
+			draw(reduceMotion.matches ? 30 : performance.now() / 1000 - t0);
+		});
+	}
+	if (reduceMotion.matches) {
+		drawStatic();
+	} else {
+		draw(0);
+		frame();
+	}
 }
 		
