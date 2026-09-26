@@ -1,20 +1,38 @@
 @font-face {
-  font-family: "Italiana";
-  src: url("/fonts/Italiana-Regular.ttf") format("truetype");
+  font-family: "M PLUS Rounded 1c";
+  src: url("../assets/fonts/MPlusRounded1c-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+/* Space Grotesk (Florian Karsten, OFL) — grotesque with engineered quirks.
+   Carries headlines, UI labels and the hero wordmark. */
+@font-face {
+  font-family: "Space Grotesk";
+  src: url("../assets/fonts/sg-400.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
-  font-family: "M PLUS Rounded 1c";
-  src: url("/fonts/MPlusRounded1c-Bold.woff2") format("woff2");
-  font-weight: 700;
+  font-family: "Space Grotesk";
+  src: url("../assets/fonts/sg-500.woff2") format("woff2");
+  font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
-  font-family: "NovaMono";
-  src: url("/fonts/NovaMono-Regular.ttf") format("truetype");
+  font-family: "Space Grotesk";
+  src: url("../assets/fonts/sg-700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+/* Nova Mono (SIL OFL 1.1) — the brand mono, per logo3.svg spec
+   ("Font: Nova Mono"). Single weight; carries data, labels, canvas text. */
+@font-face {
+  font-family: "Nova Mono";
+  src: url("../assets/fonts/NovaMono-Regular.ttf") format("truetype");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
