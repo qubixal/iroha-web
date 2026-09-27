@@ -6,7 +6,7 @@ import starlight from '@astrojs/starlight';
 // https://astro.build/config
 
 export default defineConfig({
-  site: 'https://sefidel.github.io',
+  site: 'https://qubixal.github.io',
   base: '/iroha-web',
   integrations: [starlight({
     title: 'iroha-web',

@@ -890,6 +890,13 @@ function dataUrl(p: string): string {
 	return `${dataBase}${p}`.replace(/([^:])\/+/g, "$1/");
 }
 
+export interface MeshStats {
+	nodes: number;
+	links: number;
+	avgMs: number | null;
+	best: { a: string; b: string; ms: number } | null;
+}
+
 export interface GlobeAPI {
 	addNode(id: string, label: string, lat: number, lon: number): void;
 	removeNode(id: string): void;
@@ -897,6 +904,7 @@ export interface GlobeAPI {
 	getProgress(): number;
 	getLatency(key: string): number | null;
 	getHistory(key: string): number[] | null;
+	getMeshStats(): MeshStats;
 	pingNode(key: string | null): void;
 	nodeAt(px: number, py: number): { key: string; label: string; lat: number; lon: number } | null;
 }
@@ -1035,6 +1043,25 @@ export function startGlobe(base: string): GlobeAPI {
 		getHistory(key: string) {
 			const h = pingBase.get(key);
 			return h ? [...h] : null;
+		},
+
+		getMeshStats(): MeshStats {
+			const live = HUBS.filter(
+				(h) => (h.kind === "you" || userNodes.some((u) => hubKey(u) === hubKey(h))) &&
+					!(outageActive && outageNodes.has(hubKey(h))),
+			);
+			let sum = 0, n = 0;
+			let best: MeshStats["best"] = null;
+			for (let i = 0; i < live.length; i++) {
+				for (let j = i + 1; j < live.length; j++) {
+					const ms = linkLat(live[i], live[j]);
+					sum += ms; n++;
+					if (!best || ms < best.ms) {
+						best = { a: live[i].name, b: live[j].name, ms };
+					}
+				}
+			}
+			return { nodes: live.length, links: n, avgMs: n ? sum / n : null, best };
 		},
 
 		pingNode(key: string | null) {

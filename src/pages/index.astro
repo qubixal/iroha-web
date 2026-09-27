@@ -684,6 +684,54 @@ const asset = (p: string) => `${base}${p}`.replace(/([^:])\/+/g, "$1/");
 					opacity: 0.6;
 					margin: 0 0 0.55rem;
 				}
+				.mesh-health {
+					margin: 0 0 0.7rem;
+					padding: 0.6rem 0.65rem 0.55rem;
+					border-left: 1px solid rgba(241, 234, 244, 0.14);
+					border-right: 1px solid rgba(241, 234, 244, 0.14);
+					background: rgba(241, 234, 244, 0.03);
+				}
+				.mesh-health .mh-stats {
+					display: flex;
+					gap: 1.1rem;
+					font-family: var(--font-mono);
+					font-size: 0.74rem;
+					color: var(--color-text);
+					margin: 0 0 0.45rem;
+				}
+				.mesh-health .mh-stats b {
+					font-weight: 600;
+					font-variant-numeric: tabular-nums;
+				}
+				.mesh-health .mh-stats span span {
+					color: var(--color-muted);
+					opacity: 0.65;
+				}
+				.mesh-health canvas {
+					display: block;
+					width: 100%;
+					height: 44px;
+				}
+				.mesh-health .mh-best {
+					font-family: var(--font-mono);
+					font-size: 0.68rem;
+					color: var(--color-muted);
+					margin-top: 0.4rem;
+					overflow: hidden;
+					text-overflow: ellipsis;
+					white-space: nowrap;
+				}
+				.mesh-health .mh-best b {
+					color: var(--color-text);
+					font-weight: 600;
+				}
+				.mesh-health .mh-empty {
+					font-family: var(--font-mono);
+					font-size: 0.72rem;
+					color: var(--color-muted);
+					opacity: 0.55;
+					padding: 0.3rem 0;
+				}
 				.loc-list,
 				.loc-list-side {
 					overflow-y: auto;
@@ -1020,6 +1068,13 @@ const asset = (p: string) => `${base}${p}`.replace(/([^:])\/+/g, "$1/");
 							<div class="adder-hint" id="adder-hint">Pick a provider, then a location.</div>
 							<div class="drafts" id="drafts"></div>
 
+							<h3 class="active-head">mesh health</h3>
+							<div class="mesh-health" id="mesh-health">
+								<div class="mh-stats" id="mh-stats"></div>
+								<canvas id="mh-spark" height="44" aria-hidden="true"></canvas>
+								<div class="mh-best" id="mh-best"></div>
+							</div>
+
 							<h3 class="active-head loc-list-narrow-head">Active locations</h3>
 							<div class="loc-list" id="loc-list"></div>
 
@@ -1048,7 +1103,7 @@ const asset = (p: string) => `${base}${p}`.replace(/([^:])\/+/g, "$1/");
 			<span class="f-sep">|</span>
 			<span>iroh-style p2p mesh in tailscale</span>
 			<span class="f-sep">|</span>
-			<a href="https://github.com/sefidel/iroha-web" target="_blank" rel="noopener">github</a>
+			<a href="https://github.com/qubixal/iroha-web" target="_blank" rel="noopener">github</a>
 			<span class="f-sep">|</span>
 			<a href="/iroha-web/getting-started/">docs</a>
 			<span class="f-right" id="foot-count"></span>
@@ -1855,10 +1910,57 @@ import { buildCacheControlDirectives } from "astro/cache/provider-utils";
 			function paintFoot(n: number) {
 				footCount.textContent = n === 0 ? "mesh: empty" : n === 1 ? "mesh: 1 node" : `mesh: ${n} nodes`;
 			}
+			const mhStats = document.getElementById("mh-stats") as HTMLDivElement;
+			const mhBest = document.getElementById("mh-best") as HTMLDivElement;
+			const mhSpark = document.getElementById("mh-spark") as HTMLCanvasElement;
+			const mhCtx = mhSpark.getContext("2d")!;
+			const mhHist: number[] = [];
+			function paintHealth() {
+				const st = api.getMeshStats();
+				if (st.avgMs !== null) {
+					mhHist.push(st.avgMs);
+					if (mhHist.length > 48) mhHist.shift();
+				}
+				if (st.nodes < 2 || st.avgMs === null) {
+					mhStats.innerHTML = `<span><b>${st.nodes}</b> <span>node${st.nodes === 1 ? "" : "s"}</span></span>`;
+					mhBest.innerHTML = `<span>add a location to bring the mesh up</span>`;
+				} else {
+					mhStats.innerHTML = `<span><b>${st.nodes}</b> <span>nodes</span></span><span><b>${st.links}</b> <span>links</span></span><span><b>${st.avgMs.toFixed(0)}ms</b> <span>avg</span></span>`;
+					mhBest.innerHTML = st.best
+						? `best route <b>${st.best.a} → ${st.best.b}</b> ${st.best.ms.toFixed(0)}ms`
+						: ``;
+				}
+				const dpr = Math.min(window.devicePixelRatio || 1, 2);
+				const w = mhSpark.clientWidth || 300, h = 44;
+				if (mhSpark.width !== Math.round(w * dpr)) {
+					mhSpark.width = Math.round(w * dpr);
+					mhSpark.height = Math.round(h * dpr);
+				}
+				mhCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+				mhCtx.clearRect(0, 0, w, h);
+				if (mhHist.length > 1) {
+					const max = Math.max(...mhHist), min = Math.min(...mhHist);
+					const span = Math.max(1e-6, max - min);
+					mhCtx.beginPath();
+					mhHist.forEach((v, i) => {
+						const x = (i / (mhHist.length - 1)) * (w - 2) + 1;
+						const y = h - 4 - ((v - min) / span) * (h - 10);
+						if (i === 0) mhCtx.moveTo(x, y);
+						else mhCtx.lineTo(x, y);
+					});
+					const last = mhHist[mhHist.length - 1];
+					mhCtx.strokeStyle = last < 40 ? "#2b856c" : last < 90 ? "#d8a93b" : "#d4589d";
+					mhCtx.lineWidth = 1.4;
+					mhCtx.lineJoin = "round";
+					mhCtx.stroke();
+				}
+			}
+			window.setInterval(paintHealth, 1000);
 			function renderList() {
 				const locs = ALL_LOCS.filter((l) => activeLocs.has(l.id));
 				activeCount.textContent = locs.length === 1 ? "1 active" : `${locs.length} active`;
 				paintFoot(locs.length);
+				paintHealth();
 				for (const list of [locListEl, locListSide]) {
 					list.innerHTML = "";
 					if (locs.length === 0) {
@@ -1986,6 +2088,7 @@ import { buildCacheControlDirectives } from "astro/cache/provider-utils";
 			refreshLocOptions();
 			renderList();
 			for (const id of DEMO_SEED) addLoc(id);
+			paintHealth();
 		</script>
 	</body>
 </html>
